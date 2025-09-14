@@ -1,0 +1,24 @@
+Key Features & I/O Summary:
+Backend Endpoints:
+
+/api/register_did → Input: user_info, Output: DID doc + keys
+/api/get_did/<did> → Input: DID, Output: DID document
+/api/create_challenge → Input: DID, Output: challenge + challenge_id
+/api/sign_challenge → Input: challenge + private_key, Output: signature
+/api/authenticate → Input: challenge_id + signature, Output: verification result
+/api/blockchain_info → Output: blockchain status + full chain
+
+Frontend Features:
+
+DID registration form with user info input
+DID document lookup and display
+3-step authentication process (challenge → sign → verify)
+Real-time blockchain information display
+Responsive design with status indicators
+
+Technologies Used:
+
+Post-Quantum: Dilithium2 signatures via pqcrypto
+Blockchain: SHA-256 hashing, linear chain structure
+Backend: Flask + SQLite database
+Frontend: Vanilla HTML/CSS/JS with fetch API

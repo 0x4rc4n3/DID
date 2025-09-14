@@ -1,0 +1,543 @@
+<!-- frontend/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Account Management System</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="nav-container">
+            <div class="nav-brand" onclick="showPage('home')">
+                <span class="brand-icon">🛡️</span>
+                <span class="brand-text">SecureAccount</span>
+            </div>
+            <div class="nav-menu">
+                <a href="#" onclick="showPage('login')" class="nav-item">Login</a>
+                <a href="#" onclick="showPage('create')" class="nav-item">Create Account</a>
+                <a href="#" onclick="showPage('search')" class="nav-item">Search</a>
+                <a href="#" onclick="showPage('status')" class="nav-item">System Status</a>
+                <a href="#" onclick="showPage('guide')" class="nav-item">Guide</a>
+            </div>
+            <div class="nav-toggle" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Home Page -->
+        <div id="home-page" class="page">
+            <div class="hero-section">
+                <h1>🛡️ Secure Account Management</h1>
+                <p class="hero-subtitle">Your quantum-safe digital identity system</p>
+                <p class="hero-description">Create secure accounts using post-quantum cryptography and blockchain technology. Future-proof your digital identity today.</p>
+                
+                <div class="hero-actions">
+                    <button onclick="showPage('login')" class="btn-primary large">🔑 Login to Account</button>
+                    <button onclick="showPage('create')" class="btn-secondary large">➕ Create New Account</button>
+                </div>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🔐</div>
+                    <h3>Quantum-Safe Security</h3>
+                    <p>Your accounts are protected with post-quantum cryptography, secure against future quantum computers.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⛓️</div>
+                    <h3>Blockchain Protection</h3>
+                    <p>All account data is stored on an immutable blockchain, ensuring tamper-proof security.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🚀</div>
+                    <h3>Easy to Use</h3>
+                    <p>Simple interface designed for everyone - no technical knowledge required.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3>Public Verification</h3>
+                    <p>Search and verify any account's public information transparently.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Page -->
+        <div id="login-page" class="page hidden">
+            <div class="page-header">
+                <h1>🔑 Login to Your Account</h1>
+                <p>Enter your credentials to access your secure account</p>
+            </div>
+            
+            <div class="form-card">
+                <div id="login-form-section">
+                    <div class="form-group">
+                        <label for="login-account-id">Account ID:</label>
+                        <input type="text" id="login-account-id" placeholder="Enter your account ID">
+                    </div>
+                    <div class="form-group">
+                        <label for="login-secret-key">Secret Key:</label>
+                        <textarea id="login-secret-key" placeholder="Enter your secret key" rows="3"></textarea>
+                        <small>This is the key you saved when creating your account</small>
+                    </div>
+                    <button onclick="startLogin()" class="btn-primary" id="login-btn">
+                        <span class="btn-text">🔑 Login</span>
+                        <span class="btn-loading hidden">⏳ Processing...</span>
+                    </button>
+                </div>
+
+                <!-- Login Progress -->
+                <div id="login-progress" class="progress-section hidden">
+                    <h3>🔄 Authenticating...</h3>
+                    <div class="progress-steps">
+                        <div class="progress-step" id="step-verify">
+                            <div class="step-icon">⏳</div>
+                            <div class="step-text">Verifying account...</div>
+                        </div>
+                        <div class="progress-step" id="step-challenge">
+                            <div class="step-icon">⏳</div>
+                            <div class="step-text">Creating security challenge...</div>
+                        </div>
+                        <div class="progress-step" id="step-sign">
+                            <div class="step-icon">⏳</div>
+                            <div class="step-text">Signing challenge...</div>
+                        </div>
+                        <div class="progress-step" id="step-authenticate">
+                            <div class="step-icon">⏳</div>
+                            <div class="step-text">Authenticating...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Login Success -->
+                <div id="login-success" class="result-section success-box hidden">
+                    <div class="result-icon">🎉</div>
+                    <h3>Login Successful!</h3>
+                    <p>You have been successfully authenticated with your account.</p>
+                    <div class="account-summary">
+                        <div class="summary-row">
+                            <strong>Account ID:</strong> <span id="login-success-id"></span>
+                        </div>
+                    </div>
+                    <button onclick="resetLogin()" class="btn-secondary">🔑 Login Again</button>
+                </div>
+                
+                <!-- Login Failed -->
+                <div id="login-failed" class="result-section error-box hidden">
+                    <div class="result-icon">❌</div>
+                    <h3>Login Failed</h3>
+                    <p>The account credentials could not be verified. Please check your Account ID and Secret Key.</p>
+                    <button onclick="resetLogin()" class="btn-secondary">🔄 Try Again</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create Account Page -->
+        <div id="create-page" class="page hidden">
+            <div class="page-header">
+                <h1>➕ Create New Account</h1>
+                <p>Register a new secure account with quantum-safe encryption</p>
+            </div>
+            
+            <div class="form-card">
+                <div id="create-form-section">
+                    <form id="create-form">
+                        <div class="form-group">
+                            <label for="create-username">Full Name:</label>
+                            <input type="text" id="create-username" name="username" required placeholder="Enter your full name">
+                        </div>
+                        <div class="form-group">
+                            <label for="create-email">Email Address:</label>
+                            <input type="email" id="create-email" name="email" required placeholder="your@email.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="create-organization">Organization (Optional):</label>
+                            <input type="text" id="create-organization" name="organization" placeholder="Your company or institution">
+                        </div>
+                        <button type="submit" class="btn-primary" id="create-btn">
+                            <span class="btn-text">➕ Create Account</span>
+                            <span class="btn-loading hidden">⏳ Creating...</span>
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- Account Created Successfully -->
+                <div id="account-created" class="result-section success-box hidden">
+                    <div class="result-icon">🎉</div>
+                    <h3>Account Created Successfully!</h3>
+                    <p><strong>Your secure account has been created.</strong> Please save the information below:</p>
+                    
+                    <div class="account-info">
+                        <div class="info-box">
+                            <label><strong>Your Account ID:</strong></label>
+                            <div class="copy-field">
+                                <input type="text" id="created-account-id" readonly>
+                                <button onclick="copyToClipboard('created-account-id')" class="copy-btn">📋 Copy</button>
+                            </div>
+                        </div>
+                        
+                        <div class="info-box">
+                            <label><strong>Your Secret Key:</strong></label>
+                            <div class="copy-field">
+                                <textarea id="created-secret-key" readonly rows="3"></textarea>
+                                <button onclick="copyToClipboard('created-secret-key')" class="copy-btn">📋 Copy</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <h4>⚠️ IMPORTANT - Save These Credentials:</h4>
+                        <ul>
+                            <li><strong>Keep your Secret Key safe</strong> - you need it to login</li>
+                            <li><strong>Copy both credentials</strong> before leaving this page</li>
+                            <li><strong>No one else can access your account</strong> without these</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button onclick="useNewAccount()" class="btn-primary">🔑 Login with New Account</button>
+                        <button onclick="resetCreateAccount()" class="btn-secondary">➕ Create Another</button>
+                        <button onclick="toggleTechnicalDetails()" class="btn-tertiary">🔍 Show Technical Details</button>
+                    </div>
+                    
+                    <div id="technical-details" class="technical-info hidden">
+                        <h4>Technical Information:</h4>
+                        <div class="code-block">
+                            <pre id="account-document"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Page -->
+        <div id="search-page" class="page hidden">
+            <div class="page-header">
+                <h1>🔍 Search Account</h1>
+                <p>Look up public information for any account</p>
+            </div>
+            
+            <div class="form-card">
+                <div id="search-form-section">
+                    <div class="form-group">
+                        <label for="search-account-id">Account ID:</label>
+                        <div class="input-with-button">
+                            <input type="text" id="search-account-id" placeholder="Enter account ID to search">
+                            <button onclick="searchAccount()" class="btn-primary" id="search-btn">
+                                <span class="btn-text">🔍 Search</span>
+                                <span class="btn-loading hidden">⏳ Searching...</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Account Found -->
+                <div id="account-found" class="result-section info-box hidden">
+                    <div class="result-icon">👤</div>
+                    <h3>Account Information</h3>
+                    <div class="account-details">
+                        <div class="detail-row">
+                            <strong>Name:</strong> <span id="search-name">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <strong>Email:</strong> <span id="search-email">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <strong>Organization:</strong> <span id="search-org">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <strong>Account Created:</strong> <span id="search-created">-</span>
+                        </div>
+                    </div>
+                    <button onclick="toggleSearchTechnical()" class="btn-tertiary">🔍 Show Technical Details</button>
+                    <div id="search-technical" class="technical-info hidden">
+                        <div class="code-block">
+                            <pre id="search-document"></pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Account Not Found -->
+                <div id="account-not-found" class="result-section error-box hidden">
+                    <div class="result-icon">❌</div>
+                    <h3>Account Not Found</h3>
+                    <p>No account exists with the provided Account ID. Please check the ID and try again.</p>
+                    <button onclick="clearSearch()" class="btn-secondary">🔄 Search Again</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Status Page -->
+        <div id="status-page" class="page hidden">
+            <div class="page-header">
+                <h1>📊 System Status</h1>
+                <p>Network information and blockchain status</p>
+            </div>
+            
+            <div class="form-card">
+                <div class="status-grid">
+                    <div class="status-card">
+                        <div class="status-number" id="total-accounts">0</div>
+                        <div class="status-label">Total Accounts</div>
+                    </div>
+                    <div class="status-card">
+                        <div class="status-number" id="total-blocks">0</div>
+                        <div class="status-label">Network Blocks</div>
+                    </div>
+                    <div class="status-card">
+                        <div class="status-indicator" id="network-status">🟢 Online</div>
+                        <div class="status-label">Network Status</div>
+                    </div>
+                    <div class="status-card">
+                        <div class="status-indicator" id="chain-validity">✅ Valid</div>
+                        <div class="status-label">Chain Validity</div>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button onclick="refreshSystemStatus()" class="btn-secondary" id="refresh-btn">
+                        <span class="btn-text">🔄 Refresh Status</span>
+                        <span class="btn-loading hidden">⏳ Loading...</span>
+                    </button>
+                    <button onclick="toggleSystemTechnical()" class="btn-tertiary">🔍 Show Network Details</button>
+                </div>
+                
+                <div id="system-technical" class="technical-info hidden">
+                    <h4>Network Information:</h4>
+                    <div class="code-block">
+                        <pre id="network-details"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Guide Page -->
+        <div id="guide-page" class="page hidden">
+            <div class="page-header">
+                <h1>📖 How to Use This System</h1>
+                <p>Complete guide for managing your secure accounts</p>
+            </div>
+            
+            <div class="guide-content">
+                <div class="guide-intro">
+                    <h2>Welcome to SecureAccount! 👋</h2>
+                    <p class="intro-text">This system helps you create and manage <strong>quantum-safe digital accounts</strong>. Your accounts are protected with advanced encryption that will remain secure even when quantum computers become available.</p>
+                    
+                    <div class="quick-start">
+                        <h3>🚀 Quick Start</h3>
+                        <div class="quick-steps">
+                            <div class="quick-step">
+                                <span class="step-num">1</span>
+                                <span class="step-text">Create your account</span>
+                            </div>
+                            <div class="quick-step">
+                                <span class="step-num">2</span>
+                                <span class="step-text">Save your credentials</span>
+                            </div>
+                            <div class="quick-step">
+                                <span class="step-num">3</span>
+                                <span class="step-text">Login anytime</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="guide-section">
+                    <div class="guide-icon">➕</div>
+                    <div class="guide-text">
+                        <h2>Creating Your Account</h2>
+                        <p class="section-intro">Setting up a new secure account is simple:</p>
+                        <div class="step-list">
+                            <div class="step">
+                                <span class="step-number">1</span>
+                                <div class="step-content">
+                                    <h4>Go to Create Account</h4>
+                                    <p>Click <strong>"Create Account"</strong> in the navigation menu</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <span class="step-number">2</span>
+                                <div class="step-content">
+                                    <h4>Fill Your Information</h4>
+                                    <p>Enter your <strong>full name</strong>, <strong>email address</strong>, and optionally your organization</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <span class="step-number">3</span>
+                                <div class="step-content">
+                                    <h4>Create Account</h4>
+                                    <p>Click <strong>"Create Account"</strong> button and wait for processing</p>
+                                </div>
+                            </div>
+                            <div class="step critical">
+                                <span class="step-number">⚠️</span>
+                                <div class="step-content">
+                                    <h4>SAVE YOUR CREDENTIALS!</h4>
+                                    <p><strong>CRITICAL:</strong> Copy both your <strong>Account ID</strong> and <strong>Secret Key</strong>. You need these to login!</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="guide-section">
+                    <div class="guide-icon">🔑</div>
+                    <div class="guide-text">
+                        <h2>Logging Into Your Account</h2>
+                        <p class="section-intro">Access your account securely:</p>
+                        <div class="step-list">
+                            <div class="step">
+                                <span class="step-number">1</span>
+                                <div class="step-content">
+                                    <h4>Go to Login</h4>
+                                    <p>Click <strong>"Login"</strong> in the navigation menu</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <span class="step-number">2</span>
+                                <div class="step-content">
+                                    <h4>Enter Your Credentials</h4>
+                                    <p>Paste your <strong>Account ID</strong> and <strong>Secret Key</strong></p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <span class="step-number">3</span>
+                                <div class="step-content">
+                                    <h4>Automatic Authentication</h4>
+                                    <p>The system will automatically verify your identity using quantum-safe cryptography</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <span class="step-number">✅</span>
+                                <div class="step-content">
+                                    <h4>Login Success</h4>
+                                    <p>You'll see <strong>"Login Successful!"</strong> when authenticated</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="guide-section">
+                    <div class="guide-icon">🔍</div>
+                    <div class="guide-text">
+                        <h2>Searching for Accounts</h2>
+                        <p class="section-intro">Look up public information about any account:</p>
+                        <div class="step-list">
+                            <div class="step">
+                                <span class="step-number">1</span>
+                                <div class="step-content">
+                                    <h4>Go to Search</h4>
+                                    <p>Click <strong>"Search"</strong> in the navigation menu</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <span class="step-number">2</span>
+                                <div class="step-content">
+                                    <h4>Enter Account ID</h4>
+                                    <p>Paste any <strong>Account ID</strong> you want to look up</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <span class="step-number">3</span>
+                                <div class="step-content">
+                                    <h4>View Public Info</h4>
+                                    <p>See the account's <strong>name</strong>, <strong>email</strong>, <strong>organization</strong>, and <strong>creation date</strong></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="info-note">
+                            <strong>Note:</strong> Only public information is shown. Secret keys are never displayed for security.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="guide-section">
+                    <div class="guide-icon">📊</div>
+                    <div class="guide-text">
+                        <h2>Checking System Status</h2>
+                        <p class="section-intro">Monitor the network and blockchain:</p>
+                        <div class="feature-grid">
+                            <div class="feature">
+                                <h4>Total Accounts</h4>
+                                <p>Number of accounts created in the system</p>
+                            </div>
+                            <div class="feature">
+                                <h4>Network Blocks</h4>
+                                <p>Total blocks in the blockchain</p>
+                            </div>
+                            <div class="feature">
+                                <h4>Network Status</h4>
+                                <p>Whether the system is online and functioning</p>
+                            </div>
+                            <div class="feature">
+                                <h4>Chain Validity</h4>
+                                <p>Whether the blockchain is valid and secure</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="security-tips">
+                    <h2>🛡️ Security Best Practices</h2>
+                    <div class="tips-grid">
+                        <div class="tip-card important">
+                            <div class="tip-icon">🔐</div>
+                            <h3>Keep Your Secret Key Safe</h3>
+                            <p><strong>NEVER share your Secret Key</strong> with anyone. It's like your password but much more secure.</p>
+                        </div>
+                        <div class="tip-card">
+                            <div class="tip-icon">📋</div>
+                            <h3>Copy Your Credentials</h3>
+                            <p><strong>Always copy and save</strong> both your Account ID and Secret Key when creating an account.</p>
+                        </div>
+                        <div class="tip-card">
+                            <div class="tip-icon">🔒</div>
+                            <h3>Quantum-Safe Security</h3>
+                            <p>Your accounts use <strong>post-quantum cryptography</strong> - secure against future quantum computers.</p>
+                        </div>
+                        <div class="tip-card">
+                            <div class="tip-icon">⛓️</div>
+                            <h3>Blockchain Protection</h3>
+                            <p>All account data is stored on an <strong>immutable blockchain</strong> - tamper-proof and transparent.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="help-section">
+                    <h2>❓ Need Help?</h2>
+                    <div class="help-content">
+                        <p><strong>If you're having trouble:</strong></p>
+                        <ul class="help-list">
+                            <li>Make sure you've copied your credentials correctly</li>
+                            <li>Check that your Account ID starts with "did:pqc:"</li>
+                            <li>Verify your Secret Key has no extra spaces</li>
+                            <li>Try refreshing the page if something isn't working</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global State -->
+    <script>
+        window.appState = {
+            currentAccountId: null,
+            currentSecretKey: null,
+            authChallenge: null,
+            authChallengeId: null,
+            authSignature: null
+        };
+    </script>
+    
+    <script src="app.js"></script>
+</body>
+</html>
