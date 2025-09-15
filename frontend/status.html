@@ -1,0 +1,246 @@
+<!-- frontend/status.html - System Status Page -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureAccount - System Status</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 10px;">
+                    <span class="brand-icon">🛡️</span>
+                    <span class="brand-text">SecureAccount</span>
+                </a>
+            </div>
+            <div class="nav-menu">
+                <a href="index.html" class="nav-item">Login</a>
+                <a href="create.html" class="nav-item">Create Account</a>
+                <a href="search.html" class="nav-item">Search</a>
+                <a href="status.html" class="nav-item active">System Status</a>
+                <a href="guide.html" class="nav-item">Guide</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>📊 System Status</h1>
+            <p>Network information and blockchain status</p>
+        </div>
+        
+        <div class="form-card">
+            <div class="status-header">
+                <h3>Current System Status</h3>
+                <button onclick="refreshSystemStatus()" class="btn-secondary" id="refresh-btn">
+                    <span class="btn-text">🔄 Refresh Status</span>
+                    <span class="btn-loading hidden">⏳ Loading...</span>
+                </button>
+            </div>
+            
+            <div class="status-grid">
+                <div class="status-card">
+                    <div class="status-number" id="total-accounts">0</div>
+                    <div class="status-label">Total Accounts</div>
+                    <div class="status-desc">Registered users in system</div>
+                </div>
+                <div class="status-card">
+                    <div class="status-number" id="total-blocks">0</div>
+                    <div class="status-label">Network Blocks</div>
+                    <div class="status-desc">Blockchain length</div>
+                </div>
+                <div class="status-card">
+                    <div class="status-indicator" id="network-status">🟡 Loading...</div>
+                    <div class="status-label">Network Status</div>
+                    <div class="status-desc">System availability</div>
+                </div>
+                <div class="status-card">
+                    <div class="status-indicator" id="chain-validity">🟡 Loading...</div>
+                    <div class="status-label">Chain Validity</div>
+                    <div class="status-desc">Blockchain integrity</div>
+                </div>
+            </div>
+            
+            <div class="system-info">
+                <h4>System Information:</h4>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <strong>Encryption:</strong> 
+                        <span>Post-Quantum ML-DSA-44</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Blockchain:</strong> 
+                        <span>SHA-256 Hashed Blocks</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Storage:</strong> 
+                        <span>SQLite Database</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>API Status:</strong> 
+                        <span id="api-status">🟡 Checking...</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button onclick="testConnection()" class="btn-secondary">🔗 Test Connection</button>
+                <button onclick="toggleSystemTechnical()" class="btn-tertiary">🔍 Show Network Details</button>
+            </div>
+            
+            <div id="system-technical" class="technical-info hidden">
+                <h4>Detailed Network Information:</h4>
+                <div class="code-block">
+                    <pre id="network-details">Loading...</pre>
+                </div>
+            </div>
+            
+            <!-- Connection Test Result -->
+            <div id="connection-result" class="result-section hidden">
+                <div id="connection-success" class="success-box hidden">
+                    <div class="result-icon">✅</div>
+                    <h3>Connection Successful!</h3>
+                    <p>All system components are working properly.</p>
+                </div>
+                
+                <div id="connection-failed" class="error-box hidden">
+                    <div class="result-icon">❌</div>
+                    <h3>Connection Issues</h3>
+                    <p>Some system components may not be responding correctly.</p>
+                    <div class="troubleshoot">
+                        <h4>Troubleshooting:</h4>
+                        <ul>
+                            <li>Check if the backend server is running</li>
+                            <li>Verify network connection</li>
+                            <li>Try refreshing the page</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="quick-links">
+            <h3>System Actions</h3>
+            <div class="links-grid">
+                <a href="create.html" class="link-card">
+                    <div class="link-icon">➕</div>
+                    <h4>Create Account</h4>
+                    <p>Add to the network</p>
+                </a>
+                <a href="search.html" class="link-card">
+                    <div class="link-icon">🔍</div>
+                    <h4>Search Accounts</h4>
+                    <p>Verify network data</p>
+                </a>
+                <a href="guide.html" class="link-card">
+                    <div class="link-icon">📖</div>
+                    <h4>Technical Guide</h4>
+                    <p>System documentation</p>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        
+        function setButtonLoading(buttonId, isLoading) {
+            const button = document.getElementById(buttonId);
+            if (button) {
+                if (isLoading) {
+                    button.classList.add('loading');
+                    button.disabled = true;
+                } else {
+                    button.classList.remove('loading');
+                    button.disabled = false;
+                }
+            }
+        }
+
+        function toggleSystemTechnical() {
+            const details = document.getElementById('system-technical');
+            details.classList.toggle('hidden');
+        }
+
+        async function testConnection() {
+            document.getElementById('connection-result').classList.remove('hidden');
+            document.getElementById('connection-success').classList.add('hidden');
+            document.getElementById('connection-failed').classList.add('hidden');
+            
+            try {
+                const response = await fetch(`${API_BASE}/blockchain_info`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('connection-success').classList.remove('hidden');
+                } else {
+                    document.getElementById('connection-failed').classList.remove('hidden');
+                }
+            } catch (error) {
+                document.getElementById('connection-failed').classList.remove('hidden');
+            }
+        }
+
+        async function refreshSystemStatus() {
+            setButtonLoading('refresh-btn', true);
+            
+            try {
+                const response = await fetch(`${API_BASE}/blockchain_info`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const info = data.blockchain_info;
+                    
+                    // Update status cards
+                    document.getElementById('total-accounts').textContent = Math.max(0, info.chain_length - 1);
+                    document.getElementById('total-blocks').textContent = info.chain_length;
+                    document.getElementById('network-status').innerHTML = info.is_valid ? '🟢 Online' : '🔴 Error';
+                    document.getElementById('chain-validity').innerHTML = info.is_valid ? '✅ Valid' : '❌ Invalid';
+                    document.getElementById('api-status').innerHTML = '🟢 Connected';
+                    
+                    // Update technical details
+                    const networkDetails = {
+                        chainLength: info.chain_length,
+                        totalAccounts: Math.max(0, info.chain_length - 1),
+                        isValid: info.is_valid,
+                        latestBlockHash: info.latest_block.hash,
+                        latestBlockIndex: info.latest_block.index,
+                        genesisBlock: info.full_chain[0],
+                        latestBlock: info.latest_block,
+                        fullChain: info.full_chain
+                    };
+                    
+                    document.getElementById('network-details').textContent = JSON.stringify(networkDetails, null, 2);
+                    
+                } else {
+                    document.getElementById('network-status').innerHTML = '🔴 Error';
+                    document.getElementById('chain-validity').innerHTML = '❌ Error';
+                    document.getElementById('api-status').innerHTML = '🔴 Error';
+                    document.getElementById('network-details').textContent = `Error: ${data.error}`;
+                }
+            } catch (error) {
+                document.getElementById('network-status').innerHTML = '🔴 Offline';
+                document.getElementById('chain-validity').innerHTML = '❌ Error';
+                document.getElementById('api-status').innerHTML = '🔴 Disconnected';
+                document.getElementById('network-details').textContent = `Network Error: ${error.message}`;
+            } finally {
+                setButtonLoading('refresh-btn', false);
+            }
+        }
+
+        // Auto-load status when page loads
+        window.onload = function() {
+            refreshSystemStatus();
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(refreshSystemStatus, 30000);
+    </script>
+</body>
+</html>

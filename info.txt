@@ -22,3 +22,32 @@ Post-Quantum: Dilithium2 signatures via pqcrypto
 Blockchain: SHA-256 hashing, linear chain structure
 Backend: Flask + SQLite database
 Frontend: Vanilla HTML/CSS/JS with fetch API
+
+DID/
+│
+├── backend/                  # python backend for logic, blockchain, and APIs
+│   ├── app.py                # main Flask/FastAPI app with API endpoints
+│   ├── blockchain.py         # blockchain implementation (blocks, hash functions, add block)
+│   ├── did_manager.py        # DID creation, PQC key generation, signing & verification
+│   ├── db.py                 # SQLite DB connection and CRUD operations
+│   ├── pqc_utils.py          # post-quantum cryptography utilities (Dilithium/FALCON)
+│   └── requirements.txt      # python dependencies (Flask, pqcrypto, sqlite3, etc.)
+│
+├── frontend/                 # simple web interface for users
+│   ├── index.html            # main webpage: register DID, authenticate, display DID docs
+│   ├── style.css             # styling of frontend
+│   └── app.js                # frontend logic: fetch API, handle signing & display results
+│
+├── tests/                    # testing scripts
+│   ├── test_blockchain.py    # test blockchain functionality
+│   ├── test_did.py           # test DID creation and verification
+│   └── test_auth.py          # test authentication flows
+│
+├── docs/                     # documentation
+│   ├── architecture_diagram.png  # system architecture diagram
+│   └── flow_diagram.png          # DID creation & authentication flow
+│
+├── data/                     # optional, for storing SQLite DB or temporary files
+│   └── did_system.db         # SQLite database file
+│
+└── README.md                 # project overview, setup instructions, usage guide

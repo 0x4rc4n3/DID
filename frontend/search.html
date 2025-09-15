@@ -1,0 +1,210 @@
+    <!-- frontend/search.html - Search Account Page -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureAccount - Search Account</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 10px;">
+                    <span class="brand-icon">🛡️</span>
+                    <span class="brand-text">SecureAccount</span>
+                </a>
+            </div>
+            <div class="nav-menu">
+                <a href="index.html" class="nav-item">Login</a>
+                <a href="create.html" class="nav-item">Create Account</a>
+                <a href="search.html" class="nav-item active">Search</a>
+                <a href="status.html" class="nav-item">System Status</a>
+                <a href="guide.html" class="nav-item">Guide</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>🔍 Search Account</h1>
+            <p>Look up public information for any account</p>
+        </div>
+        
+        <div class="form-card">
+            <div id="search-form-section">
+                <div class="form-group">
+                    <label for="search-account-id">Account ID:</label>
+                    <div class="input-with-button">
+                        <input type="text" id="search-account-id" placeholder="Enter account ID to search">
+                        <button onclick="searchAccount()" class="btn-primary" id="search-btn">
+                            <span class="btn-text">🔍 Search</span>
+                            <span class="btn-loading hidden">⏳ Searching...</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="search-tips">
+                    <h4>💡 Search Tips:</h4>
+                    <ul>
+                        <li>Account IDs start with "did:pqc:"</li>
+                        <li>Only public information is shown (name, email, organization)</li>
+                        <li>Secret keys are never displayed for security</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Account Found -->
+            <div id="account-found" class="result-section info-box hidden">
+                <div class="result-icon">👤</div>
+                <h3>Account Information</h3>
+                <div class="account-details">
+                    <div class="detail-row">
+                        <strong>Name:</strong> <span id="search-name">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <strong>Email:</strong> <span id="search-email">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <strong>Organization:</strong> <span id="search-org">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <strong>Account Created:</strong> <span id="search-created">-</span>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button onclick="clearSearch()" class="btn-secondary">🔄 Search Another</button>
+                    <button onclick="toggleSearchTechnical()" class="btn-tertiary">🔍 Show Technical Details</button>
+                </div>
+                
+                <div id="search-technical" class="technical-info hidden">
+                    <h4>Technical Information:</h4>
+                    <div class="code-block">
+                        <pre id="search-document"></pre>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Account Not Found -->
+            <div id="account-not-found" class="result-section error-box hidden">
+                <div class="result-icon">❌</div>
+                <h3>Account Not Found</h3>
+                <p>No account exists with the provided Account ID. Please check the ID and try again.</p>
+                <div class="search-help">
+                    <h4>Common Issues:</h4>
+                    <ul>
+                        <li>Make sure the Account ID is complete and correct</li>
+                        <li>Account IDs are case-sensitive</li>
+                        <li>Check for any extra spaces or characters</li>
+                    </ul>
+                </div>
+                <button onclick="clearSearch()" class="btn-secondary">🔄 Try Again</button>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="quick-links">
+            <h3>Other Actions</h3>
+            <div class="links-grid">
+                <a href="create.html" class="link-card">
+                    <div class="link-icon">➕</div>
+                    <h4>Create Account</h4>
+                    <p>Register a new account</p>
+                </a>
+                <a href="index.html" class="link-card">
+                    <div class="link-icon">🔑</div>
+                    <h4>Login</h4>
+                    <p>Access your account</p>
+                </a>
+                <a href="guide.html" class="link-card">
+                    <div class="link-icon">📖</div>
+                    <h4>Guide</h4>
+                    <p>How to use the system</p>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        
+        function setButtonLoading(buttonId, isLoading) {
+            const button = document.getElementById(buttonId);
+            if (button) {
+                if (isLoading) {
+                    button.classList.add('loading');
+                    button.disabled = true;
+                } else {
+                    button.classList.remove('loading');
+                    button.disabled = false;
+                }
+            }
+        }
+
+        function toggleSearchTechnical() {
+            const details = document.getElementById('search-technical');
+            details.classList.toggle('hidden');
+        }
+
+        function clearSearch() {
+            document.getElementById('search-account-id').value = '';
+            document.getElementById('account-found').classList.add('hidden');
+            document.getElementById('account-not-found').classList.add('hidden');
+            document.getElementById('search-technical').classList.add('hidden');
+        }
+
+        async function searchAccount() {
+            const accountId = document.getElementById('search-account-id').value.trim();
+            
+            if (!accountId) {
+                alert('Please enter an Account ID');
+                return;
+            }
+            
+            setButtonLoading('search-btn', true);
+            
+            // Hide previous results
+            document.getElementById('account-found').classList.add('hidden');
+            document.getElementById('account-not-found').classList.add('hidden');
+            
+            try {
+                const response = await fetch(`${API_BASE}/get_did/${encodeURIComponent(accountId)}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Show account found
+                    document.getElementById('account-found').classList.remove('hidden');
+                    
+                    // Fill in the found account information
+                    const userInfo = data.document.userInfo || {};
+                    document.getElementById('search-name').textContent = userInfo.username || 'Not specified';
+                    document.getElementById('search-email').textContent = userInfo.email || 'Not specified';
+                    document.getElementById('search-org').textContent = userInfo.organization || 'Not specified';
+                    document.getElementById('search-created').textContent = new Date(data.document.created).toLocaleString();
+                    document.getElementById('search-document').textContent = JSON.stringify(data.document, null, 2);
+                    
+                } else {
+                    // Show account not found
+                    document.getElementById('account-not-found').classList.remove('hidden');
+                }
+            } catch (error) {
+                document.getElementById('account-not-found').classList.remove('hidden');
+                console.error('Search error:', error.message);
+            } finally {
+                setButtonLoading('search-btn', false);
+            }
+        }
+
+        // Allow Enter key to search
+        document.getElementById('search-account-id').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchAccount();
+            }
+        });
+    </script>
+</body>
+</html>

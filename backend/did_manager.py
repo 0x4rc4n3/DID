@@ -30,13 +30,34 @@ class DIDManager:
     
     def create_did(self, user_info):
         """Create new DID with PQC key pair"""
-        # Generate unique DID
-        did_id = str(uuid.uuid4())
-        did = f"did:pqc:{did_id}"
+        # Generate more memorable DID using readable words
+        import random
         
-        # Check if DID already exists
-        if self.db.did_exists(did):
-            raise ValueError("DID already exists")
+        # Simple word lists for memorable DIDs
+        adjectives = ['secure', 'quantum', 'digital', 'crypto', 'safe', 'smart', 'strong', 'fast', 'blue', 'green']
+        nouns = ['account', 'user', 'node', 'key', 'wallet', 'id', 'profile', 'entity', 'agent', 'client']
+        
+        # Generate readable DID
+        adj = random.choice(adjectives)
+        noun = random.choice(nouns)
+        numbers = str(random.randint(1000, 9999))
+        did_suffix = f"{adj}-{noun}-{numbers}"
+        did = f"did:pqc:{did_suffix}"
+        
+        # Check if DID already exists, regenerate if needed
+        attempts = 0
+        while self.db.did_exists(did) and attempts < 10:
+            adj = random.choice(adjectives)
+            noun = random.choice(nouns)
+            numbers = str(random.randint(1000, 9999))
+            did_suffix = f"{adj}-{noun}-{numbers}"
+            did = f"did:pqc:{did_suffix}"
+            attempts += 1
+            
+        if attempts >= 10:
+            # Fall back to UUID if we can't generate unique memorable DID
+            did_id = str(uuid.uuid4())
+            did = f"did:pqc:{did_id}"
         
         # Generate PQC key pair
         keys = self.pqc.generate_key_pair()

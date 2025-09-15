@@ -143,17 +143,30 @@ def sign_challenge():
         challenge = data.get('challenge')
         private_key = data.get('private_key')
         
+        print(f"DEBUG: Signing challenge")
+        print(f"DEBUG: Challenge length: {len(challenge) if challenge else 'None'}")
+        print(f"DEBUG: Private key length: {len(private_key) if private_key else 'None'}")
+        
         if not challenge or not private_key:
             return jsonify({'error': 'Challenge and private key required'}), 400
         
-        signature = did_manager.sign_challenge(challenge, private_key)
-        
-        return jsonify({
-            'success': True,
-            'signature': signature
-        })
+        try:
+            signature = did_manager.sign_challenge(challenge, private_key)
+            print(f"DEBUG: Signature generated successfully, length: {len(signature)}")
+            
+            return jsonify({
+                'success': True,
+                'signature': signature
+            })
+        except Exception as sign_error:
+            print(f"DEBUG: Signing error: {str(sign_error)}")
+            return jsonify({
+                'success': False,
+                'error': f'Signing failed: {str(sign_error)}'
+            }), 400
     
     except Exception as e:
+        print(f"DEBUG: General error in sign_challenge: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/blockchain_info', methods=['GET'])

@@ -1,0 +1,229 @@
+<!-- frontend/create.html - Create Account Page -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureAccount - Create Account</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 10px;">
+                    <span class="brand-icon">🛡️</span>
+                    <span class="brand-text">SecureAccount</span>
+                </a>
+            </div>
+            <div class="nav-menu">
+                <a href="index.html" class="nav-item">Login</a>
+                <a href="create.html" class="nav-item active">Create Account</a>
+                <a href="search.html" class="nav-item">Search</a>
+                <a href="status.html" class="nav-item">System Status</a>
+                <a href="guide.html" class="nav-item">Guide</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>➕ Create New Account</h1>
+            <p>Register a new secure account with quantum-safe encryption</p>
+        </div>
+        
+        <div class="form-card">
+            <div id="create-form-section">
+                <form id="create-form">
+                    <div class="form-group">
+                        <label for="create-username">Full Name:</label>
+                        <input type="text" id="create-username" name="username" required placeholder="Enter your full name">
+                    </div>
+                    <div class="form-group">
+                        <label for="create-email">Email Address:</label>
+                        <input type="email" id="create-email" name="email" required placeholder="your@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="create-organization">Organization (Optional):</label>
+                        <input type="text" id="create-organization" name="organization" placeholder="Your company or institution">
+                    </div>
+                    <button type="submit" class="btn-primary" id="create-btn">
+                        <span class="btn-text">➕ Create Account</span>
+                        <span class="btn-loading hidden">⏳ Creating...</span>
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Account Created Successfully -->
+            <div id="account-created" class="result-section success-box hidden">
+                <div class="result-icon">🎉</div>
+                <h3>Account Created Successfully!</h3>
+                <p><strong>Your secure account has been created.</strong> Please save the information below:</p>
+                
+                <div class="account-info">
+                    <div class="info-box">
+                        <label><strong>Your Account ID:</strong></label>
+                        <div class="copy-field">
+                            <input type="text" id="created-account-id" readonly>
+                            <button onclick="copyToClipboard('created-account-id')" class="copy-btn">📋 Copy</button>
+                        </div>
+                    </div>
+                    
+                    <div class="info-box">
+                        <label><strong>Your Secret Key:</strong></label>
+                        <div class="copy-field">
+                            <textarea id="created-secret-key" readonly rows="3"></textarea>
+                            <button onclick="copyToClipboard('created-secret-key')" class="copy-btn">📋 Copy</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="warning-box">
+                    <h4>⚠️ IMPORTANT - Save These Credentials:</h4>
+                    <ul>
+                        <li><strong>Keep your Secret Key safe</strong> - you need it to login</li>
+                        <li><strong>Copy both credentials</strong> before leaving this page</li>
+                        <li><strong>No one else can access your account</strong> without these</li>
+                    </ul>
+                </div>
+                
+                <div class="action-buttons">
+                    <button onclick="loginWithNewAccount()" class="btn-primary">🔑 Login with New Account</button>
+                    <button onclick="resetCreateAccount()" class="btn-secondary">➕ Create Another</button>
+                    <button onclick="toggleTechnicalDetails()" class="btn-tertiary">🔍 Show Technical Details</button>
+                </div>
+                
+                <div id="technical-details" class="technical-info hidden">
+                    <h4>Technical Information:</h4>
+                    <div class="code-block">
+                        <pre id="account-document"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="quick-links">
+            <h3>What's Next?</h3>
+            <div class="links-grid">
+                <a href="index.html" class="link-card">
+                    <div class="link-icon">🔑</div>
+                    <h4>Login</h4>
+                    <p>Test your new account</p>
+                </a>
+                <a href="search.html" class="link-card">
+                    <div class="link-icon">🔍</div>
+                    <h4>Search</h4>
+                    <p>Look up account info</p>
+                </a>
+                <a href="guide.html" class="link-card">
+                    <div class="link-icon">📖</div>
+                    <h4>Guide</h4>
+                    <p>Learn more about the system</p>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        
+        function setButtonLoading(buttonId, isLoading) {
+            const button = document.getElementById(buttonId);
+            if (button) {
+                if (isLoading) {
+                    button.classList.add('loading');
+                    button.disabled = true;
+                } else {
+                    button.classList.remove('loading');
+                    button.disabled = false;
+                }
+            }
+        }
+
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            element.select();
+            element.setSelectionRange(0, 99999);
+            document.execCommand('copy');
+            
+            const copyBtn = element.parentElement.querySelector('.copy-btn');
+            if (copyBtn) {
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = '✅ Copied!';
+                copyBtn.classList.add('copied');
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+            }
+        }
+
+        function toggleTechnicalDetails() {
+            const details = document.getElementById('technical-details');
+            details.classList.toggle('hidden');
+        }
+
+        function resetCreateAccount() {
+            document.getElementById('create-form-section').style.display = 'block';
+            document.getElementById('account-created').classList.add('hidden');
+            document.getElementById('create-form').reset();
+            document.getElementById('technical-details').classList.add('hidden');
+        }
+
+        function loginWithNewAccount() {
+            const accountId = document.getElementById('created-account-id').value;
+            const secretKey = document.getElementById('created-secret-key').value;
+            
+            // Redirect to login page with credentials
+            window.location.href = `index.html?account_id=${encodeURIComponent(accountId)}&secret_key=${encodeURIComponent(secretKey)}`;
+        }
+
+        // Create Account Form Handler
+        document.getElementById('create-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            setButtonLoading('create-btn', true);
+            
+            const formData = new FormData(e.target);
+            const userInfo = {
+                username: formData.get('username'),
+                email: formData.get('email'),
+                organization: formData.get('organization') || 'Not specified'
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/register_did`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ user_info: userInfo })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Hide form section and show success
+                    document.getElementById('create-form-section').style.display = 'none';
+                    document.getElementById('account-created').classList.remove('hidden');
+                    
+                    // Fill in the success information
+                    document.getElementById('created-account-id').value = data.did;
+                    document.getElementById('created-secret-key').value = data.private_key;
+                    document.getElementById('account-document').textContent = JSON.stringify(data.document, null, 2);
+                    
+                } else {
+                    alert(`Error creating account: ${data.error}`);
+                }
+            } catch (error) {
+                alert(`Network error: ${error.message}`);
+            } finally {
+                setButtonLoading('create-btn', false);
+            }
+        });
+    </script>
+</body>
+</html>

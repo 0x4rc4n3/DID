@@ -2,37 +2,53 @@
 const API_BASE = 'http://localhost:5000/api';
 
 // Navigation Functions
-function showMainMenu() {
-    hideAllSections();
-    document.getElementById('main-menu').style.display = 'block';
+function showPage(pageId) {
+    hideAllPages();
+    document.getElementById(pageId + '-page').style.display = 'block';
+    
+    // Initialize page-specific data
+    if (pageId === 'status') {
+        refreshSystemStatus();
+    }
+    
+    // Reset forms and states when switching pages
+    resetPageState(pageId);
 }
 
-function showSection(sectionId) {
-    hideAllSections();
-    document.getElementById(sectionId).style.display = 'block';
-    
-    // Initialize section-specific data
-    if (sectionId === 'system-status') {
-        refreshSystemStatus();
+function hideAllPages() {
+    const pages = ['home', 'login', 'create', 'search', 'status', 'guide'];
+    pages.forEach(id => {
+        const element = document.getElementById(id + '-page');
+        if (element) element.style.display = 'none';
+    });
+}
+
+function resetPageState(pageId) {
+    switch(pageId) {
+        case 'login':
+            resetLogin();
+            break;
+        case 'create':
+            resetCreateAccount();
+            break;
+        case 'search':
+            clearSearch();
+            break;
     }
 }
 
-function hideAllSections() {
-    const sections = ['main-menu', 'login-account', 'create-account', 'search-account', 'system-status', 'guide'];
-    sections.forEach(id => {
-        const element = document.getElementById(id);
-        if (element) element.style.display = 'none';
-    });
+function toggleMobileMenu() {
+    // Mobile menu toggle functionality can be added here
+    console.log('Mobile menu toggle');
 }
 
 // Utility Functions
 function copyToClipboard(elementId) {
     const element = document.getElementById(elementId);
     element.select();
-    element.setSelectionRange(0, 99999); // For mobile devices
+    element.setSelectionRange(0, 99999);
     document.execCommand('copy');
     
-    // Show feedback
     const copyBtn = element.parentElement.querySelector('.copy-btn');
     if (copyBtn) {
         const originalText = copyBtn.textContent;
@@ -88,6 +104,10 @@ function toggleSystemTechnical() {
     details.classList.toggle('hidden');
 }
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 // Create Account Functions
 document.getElementById('create-form').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -113,8 +133,8 @@ document.getElementById('create-form').addEventListener('submit', async (e) => {
         const data = await response.json();
         
         if (data.success) {
-            // Hide form and show success
-            document.getElementById('create-form').style.display = 'none';
+            // Hide form section and show success
+            document.getElementById('create-form-section').style.display = 'none';
             document.getElementById('account-created').classList.remove('hidden');
             
             // Fill in the success information
@@ -137,17 +157,17 @@ document.getElementById('create-form').addEventListener('submit', async (e) => {
 });
 
 function resetCreateAccount() {
-    document.getElementById('create-form').style.display = 'block';
+    document.getElementById('create-form-section').style.display = 'block';
     document.getElementById('account-created').classList.add('hidden');
     document.getElementById('create-form').reset();
     document.getElementById('technical-details').classList.add('hidden');
 }
 
 function useNewAccount() {
-    // Auto-fill login form and switch to login
+    // Auto-fill login form and switch to login page
     document.getElementById('login-account-id').value = window.appState.currentAccountId;
     document.getElementById('login-secret-key').value = window.appState.currentSecretKey;
-    showSection('login-account');
+    showPage('login');
 }
 
 // Search Account Functions
@@ -161,15 +181,17 @@ async function searchAccount() {
     
     setButtonLoading('search-btn', true);
     
+    // Hide previous results
+    document.getElementById('account-found').classList.add('hidden');
+    document.getElementById('account-not-found').classList.add('hidden');
+    
     try {
         const response = await fetch(`${API_BASE}/get_did/${encodeURIComponent(accountId)}`);
         const data = await response.json();
         
         if (data.success) {
             // Show account found
-            document.getElementById('search-results').classList.remove('hidden');
             document.getElementById('account-found').classList.remove('hidden');
-            document.getElementById('account-not-found').classList.add('hidden');
             
             // Fill in the found account information
             const userInfo = data.document.userInfo || {};
@@ -181,24 +203,39 @@ async function searchAccount() {
             
         } else {
             // Show account not found
-            document.getElementById('search-results').classList.remove('hidden');
-            document.getElementById('account-found').classList.add('hidden');
             document.getElementById('account-not-found').classList.remove('hidden');
         }
     } catch (error) {
+        document.getElementById('account-not-found').classList.remove('hidden');
         alert(`Network error: ${error.message}`);
     } finally {
         setButtonLoading('search-btn', false);
     }
 }
 
+function clearSearch() {
+    document.getElementById('search-account-id').value = '';
+    document.getElementById('account-found').classList.add('hidden');
+    document.getElementById('account-not-found').classList.add('hidden');
+    document.getElementById('search-technical').classList.add('hidden');
+}
+
 // Login Functions
 function resetLogin() {
-    document.getElementById('login-step-1').classList.remove('hidden');
+    // Hide all sections except form
+    document.getElementById('login-form-section').style.display = 'block';
     document.getElementById('login-progress').classList.add('hidden');
-    document.getElementById('login-result').classList.add('hidden');
     document.getElementById('login-success').classList.add('hidden');
     document.getElementById('login-failed').classList.add('hidden');
+    
+    // Reset progress steps
+    ['step-verify', 'step-challenge', 'step-sign', 'step-authenticate'].forEach(stepId => {
+        const step = document.getElementById(stepId);
+        if (step) {
+            step.className = 'progress-step';
+            step.querySelector('.step-icon').textContent = '⏳';
+        }
+    });
     
     // Auto-fill if we have stored credentials
     if (window.appState.currentAccountId) {
@@ -218,9 +255,11 @@ async function startLogin() {
         return;
     }
     
-    // Show progress
-    document.getElementById('login-step-1').classList.add('hidden');
+    // Hide form and show progress
+    document.getElementById('login-form-section').style.display = 'none';
     document.getElementById('login-progress').classList.remove('hidden');
+    document.getElementById('login-success').classList.add('hidden');
+    document.getElementById('login-failed').classList.add('hidden');
     
     try {
         // Step 1: Verify account exists
@@ -233,7 +272,7 @@ async function startLogin() {
         }
         
         updateProgressStep('step-verify', 'completed');
-        await sleep(500);
+        await sleep(800);
         
         // Step 2: Create challenge
         updateProgressStep('step-challenge', 'active');
@@ -252,7 +291,7 @@ async function startLogin() {
         window.appState.authChallengeId = challengeData.challenge_id;
         
         updateProgressStep('step-challenge', 'completed');
-        await sleep(500);
+        await sleep(800);
         
         // Step 3: Sign challenge
         updateProgressStep('step-sign', 'active');
@@ -273,7 +312,7 @@ async function startLogin() {
         window.appState.authSignature = signData.signature;
         
         updateProgressStep('step-sign', 'completed');
-        await sleep(500);
+        await sleep(800);
         
         // Step 4: Authenticate
         updateProgressStep('step-authenticate', 'active');
@@ -292,11 +331,10 @@ async function startLogin() {
         }
         
         updateProgressStep('step-authenticate', 'completed');
-        await sleep(500);
+        await sleep(800);
         
-        // Show result
+        // Hide progress and show result
         document.getElementById('login-progress').classList.add('hidden');
-        document.getElementById('login-result').classList.remove('hidden');
         
         if (authData.authenticated) {
             document.getElementById('login-success').classList.remove('hidden');
@@ -310,12 +348,11 @@ async function startLogin() {
         }
         
     } catch (error) {
-        // Show error
+        // Hide progress and show error
         document.getElementById('login-progress').classList.add('hidden');
-        document.getElementById('login-result').classList.remove('hidden');
         document.getElementById('login-failed').classList.remove('hidden');
         
-        alert(`Login failed: ${error.message}`);
+        console.error('Login failed:', error.message);
     }
 }
 
@@ -360,20 +397,24 @@ async function refreshSystemStatus() {
     }
 }
 
-// Utility function for delays
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
-    showMainMenu();
+    console.log('DOM loaded, initializing...');
+    
+    // Make sure home page is visible
+    showPage('home');
     
     // Auto-fill login if we have stored data
-    if (window.appState.currentAccountId) {
-        document.getElementById('login-account-id').value = window.appState.currentAccountId;
+    const loginAccountId = document.getElementById('login-account-id');
+    const loginSecretKey = document.getElementById('login-secret-key');
+    
+    if (loginAccountId && window.appState.currentAccountId) {
+        loginAccountId.value = window.appState.currentAccountId;
     }
-    if (window.appState.currentSecretKey) {
-        document.getElementById('login-secret-key').value = window.appState.currentSecretKey;
+    if (loginSecretKey && window.appState.currentSecretKey) {
+        loginSecretKey.value = window.appState.currentSecretKey;
     }
+    
+    console.log('Initialization complete');
 });
+
